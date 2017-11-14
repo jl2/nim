@@ -16,19 +16,21 @@
 (defgeneric play (game))
 
 
+(defclass human-nim-player (player)
+  ((name :initform "human")))
+
+(defclass random-nim-player (player)
+  ((name :initform "random")))
+
+(defclass smart-nim-player (player)
+  ((name :initform "random")))
+
 (defclass nim-game (simple-game)
   ((piles :initarg :piles
           :initform (make-array 3 :initial-contents '(3 5 7)))
    (players :initarg :players
             :initform (make-array 2 :initial-contents (list (make-instance 'human-nim-player)
-                                                            (make-instance 'computer-nim-player))))))
-
-(defclass human-nim-player (player)
-  ((name :initform "human")))
-
-(defclass computer-nim-player (player)
-  ((name :initform "computer")))
-
+                                                            (make-instance 'random-nim-player))))))
 
 (defmethod show-game ((game nim-game))
   (with-slots (piles) game
@@ -37,11 +39,29 @@
        do
          (format t "Pile ~2a : ~a~%" pile count))))
 
+(defun remaining (piles)
+  (loop for pile across piles summing pile))
+
 (defmethod winp ((game nim-game))
   (with-slots (piles) game
-    (= 1 (loop for pile across piles summing pile))))
+    (= 1 (remaining piles))))
 
-(defmethod take-turn ((game nim-game) (player computer-nim-player))
+(defun max-take (piles pile)
+  (let ((val (aref piles pile)))
+    (if (= (remaining piles) val)
+        (1- val)
+        val)))
+
+(defmethod take-turn ((game nim-game) (player random-nim-player))
+  (with-slots (piles) game
+    (let* ((pile (loop for pile = (random (length piles)) then (random (length piles))
+                    until (>= (aref piles pile) 1)
+                    finally (return pile)))
+           (amount (1+ (random (- (max-take piles pile) 1)))))
+      (format t "~a is taking ~a from pile ~a~%" (slot-value player 'name) amount pile)
+      (decf (aref piles pile) amount))))
+
+(defmethod take-turn ((game nim-game) (player smart-nim-player))
   (with-slots (piles) game
     (let* ((pile (loop for pile = (random (length piles)) then (random (length piles))
                     until (>= (aref piles pile) 1)
@@ -86,4 +106,5 @@
          (let ((cp (aref players current-player)))
            (show-game game)
            (format t "Player ~a's turn (~a)~%" current-player cp)
-           (take-turn game cp)))))
+           (take-turn game cp))
+       finally (return turn-count))))
