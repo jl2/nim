@@ -77,10 +77,7 @@
                     finally (return pile)))
            (mt (max-take piles pile))
            (amount (1+ (random mt))))
-      (format *output-stream* "~a is taking ~a from pile ~a~%" (slot-value player 'name) amount pile)
-      (decf (aref piles pile) amount))))
-
-
+      (values pile amount))))
 
 (defmethod choose-move ((game nim-game) (player smart-nim-player))
   (with-slots (piles) game
