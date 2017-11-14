@@ -4,11 +4,13 @@
 
 (defpackage #:nim
   (:use #:cl #:alexandria)
-  (:export #:simple-game
+  (:export #:*output-stream*
+           #:simple-game
            #:nim-game
            #:show
            #:play
 
            #:human-nim-player
-           #:computer-nim-player))
+           #:random-nim-player
+           #:smart-nim-player))
 
