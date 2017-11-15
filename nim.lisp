@@ -4,20 +4,6 @@
 
 (in-package #:nim)
 
-(defclass player ()
-  ((name :initarg :name)))
-
-(defclass simple-game ()
-  ((players :initarg :players :initform nil)))
-
-(defgeneric show-game (game))
-(defgeneric game-over-p (game))
-(defgeneric take-turn (game player))
-(defgeneric choose-move (game player))
-(defgeneric play (game))
-
-(defparameter *output-stream* t)
-
 (defclass human-nim-player (player)
   ((name :initform "human")))
 
