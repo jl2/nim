@@ -4,16 +4,19 @@
 
 (in-package #:nim)
 
-(defclass human-nim-player (player)
+(defclass nim-player (player)
+  ())
+
+(defclass human-nim-player (nim-player)
   ((name :initform "human")))
 
-(defclass random-nim-player (player)
+(defclass random-nim-player (nim-player)
   ((name :initform "random")))
 
-(defclass smart-nim-player (player)
-  ((name :initform "random")))
+(defclass smart-nim-player (nim-player)
+  ((name :initform "smart")))
 
-(defclass nim-game (simple-game)
+(defclass nim-game (game)
   ((piles :initarg :piles
           :initform (make-array 3 :initial-contents '(3 5 7)))
    (players :initarg :players
@@ -72,24 +75,24 @@
            (first-idx (car nzps))
            (second-idx (cadr nzps))
            (first-pile (aref piles first-idx))
-           (second-pile (aref piles second-idx)))
+           (second-pile (if second-idx (aref piles second-idx) nil)))
       (cond
         ;; If there's only one pile, take all but one
         ((= 1 (length nzps))
          (values (car nzps) (1- (aref piles (car nzps)))))
 
         ;; If there's two piles, and one of them is 1, take all of the other pile
-        ((and (= 2 (length nzps)) (= 1 first-pile))
+        ((and (= 2 (length nzps)) (= 1 first-pile) second-pile)
          (values second-idx second-pile))
 
-        ((and (= 2 (length nzps)) (= 1 second-pile)
-              (values first-idx first-pile)))
+        ((and (= 2 (length nzps)) second-pile (= 1 second-pile))
+         (values first-idx first-pile))
 
         ;; If one pile is greater than the other, make them equal
-        ((and (= 2 (length nzps)) (> first-pile second-pile))
+        ((and (= 2 (length nzps)) second-pile (> first-pile second-pile))
          (values first-idx (- first-pile second-pile )))
 
-        ((= 2 (length nzps))
+        ((and second-pile (= 2 (length nzps)))
          (values second-idx (- second-pile first-pile)))
 
         ;; If the nim-sum is 0, choose at random
@@ -145,6 +148,17 @@
        do
          (let ((cp (aref players current-player)))
            (show-game game)
-           (format *output-stream* "Player ~a's turn (~a)~%" current-player cp)
+           (format *output-stream* "Player ~a's turn (~a)~%" current-player (slot-value cp 'name))
            (take-turn game cp))
        finally (return turn-count))))
+
+
+(defun play-nim ()
+  (nim:play (make-instance
+             'nim:nim-game
+             :players
+             (make-array 2
+                         :initial-contents
+                         (list
+                          (make-instance 'nim:random-nim-player :name "random")
+                          (make-instance 'nim:human-nim-player :name "human"))))))

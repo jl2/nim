@@ -11,5 +11,6 @@
   :serial t
   :components ((:file "package")
                (:file "game")
-               (:file "nim")))
+               (:file "nim")
+               (:file "lasker")))
 
